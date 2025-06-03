@@ -1,8 +1,26 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  Param,
+  Put,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ApiCreateUser } from './docs/users.docs';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiTags, ApiOperation, ApiParam } from '@nestjs/swagger';
+import {
+  ApiCreateUser,
+  ApiDeleteUser,
+  ApiGetAllUsers,
+  ApiGetUserById,
+  ApiUpdateUser,
+} from './docs/users.docs';
 
+@ApiTags('Usuarios')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -11,9 +29,30 @@ export class UsersController {
   @ApiCreateUser()
   async register(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
-    return {
-      id: user.id,
-      email: user.email,
-    };
+    return { id: user.id, email: user.email };
+  }
+
+  @Get()
+  @ApiGetAllUsers()
+  findAll() {
+    return this.usersService.findAll();
+  }
+
+  @Get(':id')
+  @ApiGetUserById()
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findById(id);
+  }
+
+  @Put(':id')
+  @ApiUpdateUser()
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
+    return this.usersService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @ApiDeleteUser()
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.remove(id);
   }
 }

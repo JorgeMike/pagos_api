@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -31,6 +32,33 @@ export class UsersService {
     });
 
     return this.userRepo.save(user);
+  }
+
+  async findAll(): Promise<User[]> {
+    return this.userRepo.find();
+  }
+
+  async findById(id: number): Promise<User> {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user)
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    return user;
+  }
+
+  async update(id: number, dto: UpdateUserDto): Promise<User> {
+    const user = await this.findById(id);
+
+    if (dto.password) {
+      dto.password = await bcrypt.hash(dto.password, 10);
+    }
+
+    Object.assign(user, dto);
+    return this.userRepo.save(user);
+  }
+
+  async remove(id: number): Promise<void> {
+    const user = await this.findById(id);
+    await this.userRepo.remove(user);
   }
 
   async findByEmail(

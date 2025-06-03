@@ -1,10 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Elimina propiedades no declaradas en DTOs
+      forbidNonWhitelisted: true, // Lanza error si se envían propiedades no permitidas
+      transform: true, // Transforma automáticamente payloads a los tipos esperados
+    }),
+  );
 
   // Configuración Swagger
   const config = new DocumentBuilder()
@@ -19,11 +27,11 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT || 3000);
 
-  Logger.log(
+  Logger.debug(
     `Aplicación corriendo en http://localhost:${process.env.PORT || 3000}`,
     'Bootstrap',
   );
-  Logger.log(
+  Logger.debug(
     `Documentación Swagger disponible en http://localhost:${process.env.PORT || 3000}/docs`,
     'Bootstrap',
   );
