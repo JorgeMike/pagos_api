@@ -38,15 +38,16 @@ export class UsersService {
     return this.userRepo.find();
   }
 
-  async findById(id: number): Promise<User> {
-    const user = await this.userRepo.findOne({ where: { id } });
-    if (!user)
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
-    return user;
+  async findById(id: number): Promise<User | null> {
+    return this.userRepo.findOne({ where: { id } });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepo.findOne({ where: { email } });
   }
 
   async update(id: number, dto: UpdateUserDto): Promise<User> {
-    const user = await this.findById(id);
+    const user = await this.findByIdOrFail(id);
 
     if (dto.password) {
       dto.password = await bcrypt.hash(dto.password, 10);
@@ -57,20 +58,25 @@ export class UsersService {
   }
 
   async remove(id: number): Promise<void> {
-    const user = await this.findById(id);
+    const user = await this.findByIdOrFail(id);
     await this.userRepo.remove(user);
   }
 
-  async findByEmail(
-    email: string,
-    useValidation: boolean = false,
-  ): Promise<User | null> {
-    const user = await this.userRepo.findOne({ where: { email } });
+  /* functions with validations */
 
-    if (useValidation && !user) {
+  async findByEmailOrFail(email: string): Promise<User> {
+    const user = await this.findByEmail(email);
+    if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
     }
+    return user;
+  }
 
+  async findByIdOrFail(id: number): Promise<User> {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
     return user;
   }
 }

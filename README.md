@@ -8,7 +8,7 @@ Para el desarrollo de esta prueba decidi usar el framework de Nest.JS por mi fam
 
 ```bash
 # Autenticación
-npm install @nestjs/passport passport passport-jwt
+npm install @nestjs/jwt @nestjs/passport passport passport-jwt
 npm install --save-dev @types/passport-jwt
 
 # Validaciones

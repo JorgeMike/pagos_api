@@ -1,5 +1,10 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+} from '@nestjs/swagger';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { CreateUserDto } from '../dto/create-user.dto';
 
@@ -35,6 +40,7 @@ export function ApiCreateUser() {
 
 export function ApiGetAllUsers() {
   return applyDecorators(
+    ApiBearerAuth(),
     ApiOperation({
       summary: 'Obtener todos los usuarios',
       description: 'Devuelve una lista con todos los usuarios registrados.',
@@ -44,6 +50,7 @@ export function ApiGetAllUsers() {
 
 export function ApiGetUserById() {
   return applyDecorators(
+    ApiBearerAuth(),
     ApiOperation({
       summary: 'Obtener usuario por ID',
       description: 'Devuelve un usuario específico por su ID.',
@@ -58,6 +65,7 @@ export function ApiGetUserById() {
 
 export function ApiUpdateUser() {
   return applyDecorators(
+    ApiBearerAuth(),
     ApiOperation({
       summary: 'Actualizar un usuario',
       description:
@@ -98,6 +106,7 @@ export function ApiUpdateUser() {
 
 export function ApiDeleteUser() {
   return applyDecorators(
+    ApiBearerAuth(),
     ApiOperation({
       summary: 'Eliminar un usuario',
       description: 'Elimina un usuario por su ID.',
