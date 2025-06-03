@@ -18,8 +18,10 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Sistema de Pagos API')
     .setDescription('Documentación de la API del sistema de pagos')
+    .addTag('Autenticación')
+    .addTag('Usuarios')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth({ bearerFormat: 'JWT', type: 'http' }, 'jwt')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

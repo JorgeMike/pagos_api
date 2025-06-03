@@ -40,7 +40,7 @@ export function ApiCreateUser() {
 
 export function ApiGetAllUsers() {
   return applyDecorators(
-    ApiBearerAuth(),
+    ApiBearerAuth('jwt'),
     ApiOperation({
       summary: 'Obtener todos los usuarios',
       description: 'Devuelve una lista con todos los usuarios registrados.',
@@ -50,7 +50,7 @@ export function ApiGetAllUsers() {
 
 export function ApiGetUserById() {
   return applyDecorators(
-    ApiBearerAuth(),
+    ApiBearerAuth('jwt'),
     ApiOperation({
       summary: 'Obtener usuario por ID',
       description: 'Devuelve un usuario específico por su ID.',
@@ -65,7 +65,7 @@ export function ApiGetUserById() {
 
 export function ApiUpdateUser() {
   return applyDecorators(
-    ApiBearerAuth(),
+    ApiBearerAuth('jwt'),
     ApiOperation({
       summary: 'Actualizar un usuario',
       description:
@@ -106,7 +106,7 @@ export function ApiUpdateUser() {
 
 export function ApiDeleteUser() {
   return applyDecorators(
-    ApiBearerAuth(),
+    ApiBearerAuth('jwt'),
     ApiOperation({
       summary: 'Eliminar un usuario',
       description: 'Elimina un usuario por su ID.',
