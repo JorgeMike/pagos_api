@@ -26,6 +26,7 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       DB_NAME: pagosdb
+      JWT_SECRET: elsecreto
     depends_on:
       - db
 

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Transaction } from './entity/transaction.entity';
+import { Transaction, TransactionStatus } from './entity/transaction.entity';
 import { Repository } from 'typeorm';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 
@@ -49,5 +49,24 @@ export class TransactionsService {
     });
 
     return history;
+  }
+
+  /* Funcion copleteTransaction, debe validar que el estatus sea authorized y pasarla al siguiente estatus: completed */
+  async completeTransaction(transactionId: string): Promise<Transaction> {
+    const transaction = await this.transactionRepo.findOne({
+      where: { id: transactionId },
+      relations: ['user'],
+    });
+
+    if (!transaction) {
+      throw new BadRequestException('Transacción no encontrada');
+    }
+
+    if (transaction.status !== 'authorized') {
+      throw new BadRequestException('Transacción no autorizada');
+    }
+
+    transaction.status = TransactionStatus.COMPLETED;
+    return this.transactionRepo.save(transaction);
   }
 }

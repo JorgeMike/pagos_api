@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { TransactionsService } from './transactions.service';
-import { ApiCreateTransaction, ApiGetTransactionHistory, ApiGetTransactionHistoryByUserId } from './docs/transactions.docs';
+import { ApiCompleteTransaction, ApiCreateTransaction, ApiGetTransactionHistory, ApiGetTransactionHistoryByUserId } from './docs/transactions.docs';
 
 @ApiTags('Transacciones')
 @Controller('transactions')
@@ -37,5 +37,11 @@ export class TransactionsController {
   async history(@Param('userId') userId: number) {
     const history = await this.transactionsService.getHistoryByUser(userId);
     return { history };
+  }
+
+  @Post('complete/:transactionId')
+  @ApiCompleteTransaction()
+  async completeTransaction(@Param('transactionId') transactionId: string) {
+    return this.transactionsService.completeTransaction(transactionId);
   }
 }

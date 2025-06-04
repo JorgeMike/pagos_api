@@ -56,3 +56,20 @@ export function ApiGetTransactionHistory() {
     ApiBearerAuth('jwt'),
   );
 }
+
+export function ApiCompleteTransaction() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Complete a transaction',
+      description:
+        'This endpoint allows you to complete a transaction by providing the transaction ID.' +
+        '\n\nIt validates that the transaction status is "authorized" and updates it to "completed".',
+    }),
+    ApiBearerAuth('jwt'),
+    ApiParam({
+      name: 'transactionId',
+      description: 'ID of the transaction to be completed',
+      type: String,
+    }),
+  );
+}
