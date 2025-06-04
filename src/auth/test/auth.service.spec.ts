@@ -4,6 +4,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../auth.service';
 import { UsersService } from '../../users/users.service';
+import { User } from 'src/users/entity/user.entity';
 
 jest.mock('bcrypt');
 
@@ -12,9 +13,10 @@ describe('AuthService', () => {
   let usersService: jest.Mocked<UsersService>;
   let jwtService: jest.Mocked<JwtService>;
 
-  const mockUser = {
+  const mockUser: User = {
+    transactions: [],
     id: 1,
-    email: 'test@example.com',
+    email: 'usuario1@example.com',
     password: 'hashedPassword',
   };
 
@@ -49,7 +51,7 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await service.validateUser('test@example.com', '1234');
-      expect(result).toEqual({ id: mockUser.id, email: mockUser.email });
+      expect(result).toEqual({ id: mockUser.id, email: mockUser.email, transactions: [] });
     });
 
     it('debería devolver null si el usuario no existe o la contraseña es incorrecta', async () => {

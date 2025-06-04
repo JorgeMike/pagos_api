@@ -11,6 +11,7 @@ describe('UsersService', () => {
   let repo: jest.Mocked<Repository<User>>;
 
   const mockUser: User = {
+    transactions: [],
     id: 1,
     email: 'usuario1@example.com',
     password: 'hashedPassword',
