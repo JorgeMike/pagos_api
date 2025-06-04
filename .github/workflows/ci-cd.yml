@@ -1,0 +1,86 @@
+name: CI/CD NestJS API
+
+# Dispara este workflow en cada push a main o al crear un pull request contra main
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    name: Instalar, probar y crear la imagen Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Obtener el código
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Instalar Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      # 3. Instalar dependencias y ejecutar tests unitarios
+      - name: Instalar dependencias y correr tests
+        run: |
+          npm ci
+          npm run test:ci  # Asegúrate de tener un script test:ci en package.json
+
+      # 4. Construir la imagen Docker
+      - name: Build Docker image
+        run: |
+          docker build \
+            --file Dockerfile \
+            --tag "${{ secrets.DOCKERHUB_USERNAME }}/pagos-api:${{ github.sha }}" .
+
+      # 5. Iniciar sesión en Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 6. Etiquetar y push a Docker Hub
+      - name: Push Docker image
+        run: |
+          docker tag "${{ secrets.DOCKERHUB_USERNAME }}/pagos-api:${{ github.sha }}" \
+                     "${{ secrets.DOCKERHUB_USERNAME }}/pagos-api:latest"
+          docker push "${{ secrets.DOCKERHUB_USERNAME }}/pagos-api:${{ github.sha }}"
+          docker push "${{ secrets.DOCKERHUB_USERNAME }}/pagos-api:latest"
+
+  deploy:
+    name: Desplegar en servidor de producción
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code (breve)
+        uses: actions/checkout@v3
+
+      # 1. Configurar clave SSH para el deploy
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # 2. Copiar docker-compose.yml al servidor (opcional)
+      - name: Copiar archivos a servidor
+        run: |
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
+            ./docker-compose.yml \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/ruta/en/servidor/pagos-api/
+      
+      # 3. Ejecutar docker-compose pull y up en el servidor
+      - name: Ejecutar despliegue remoto
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /ruta/en/servidor/pagos-api
+            # Obtener la última imagen construida en Docker Hub
+            docker-compose pull
+            # Reiniciar el contenedor (re-create)
+            docker-compose up -d --remove-orphans
+          EOF

@@ -1,21 +1,41 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { TransactionsService } from './transactions.service';
+import { ApiCreateTransaction, ApiGetTransactionHistory, ApiGetTransactionHistoryByUserId } from './docs/transactions.docs';
 
 @ApiTags('Transacciones')
 @Controller('transactions')
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('jwt')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('jwt')
   @Post()
+  @ApiCreateTransaction()
   async create(
     @Body() createTransactionDto: CreateTransactionDto,
     @Request() req,
   ) {
-    return this.transactionsService.create(createTransactionDto);
+    return this.transactionsService.initiateTransaction(
+      req.user.id,
+      createTransactionDto,
+    );
+  }
+
+  @Get('history')
+  @ApiGetTransactionHistory()
+  async getHistory(@Request() req) {
+    const userId = req.user.id;
+    const history = await this.transactionsService.getHistoryByUser(userId);
+    return { history };
+  }
+
+  @Get('history/:userId')
+  @ApiGetTransactionHistoryByUserId()
+  async history(@Param('userId') userId: number) {
+    const history = await this.transactionsService.getHistoryByUser(userId);
+    return { history };
   }
 }
